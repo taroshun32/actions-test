@@ -40,6 +40,7 @@ jobs:
         id: create
         uses: actions/github-script@v6
         with:
+          token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const { data } = await github.rest.checks.create({
               owner: context.repo.owner,
@@ -49,8 +50,8 @@ jobs:
               status: 'in_progress',
               started_at: new Date().toISOString(),
             });
+            console.log('Created check run ID:', data.id);
             core.setOutput('check_run_id', data.id);
-          github-token: ${{ secrets.CHECKS_API_TOKEN }}
 
   test-add:
     name: Test Add Function
@@ -64,12 +65,12 @@ jobs:
           ref: ${{ needs.create_check_run.outputs.head_sha }}
       - name: Fetch base branch
         run: |
-          git fetch origin ${{ needs.create_check_run.outputs.base_ref }} --depth=1
+          git fetch origin ${{ needs.create_check_run.outputs.base_ref }}:${{ needs.create_check_run.outputs.base_ref }} --depth=1
       - name: Paths filter
         id: filter
         uses: dorny/paths-filter@v2
         with:
-          base: "origin/${{ needs.create_check_run.outputs.base_ref }}"
+          base: ${{ needs.create_check_run.outputs.base_ref }}
           filters: |
             add_files:
               - 'src/add.ts'
@@ -92,12 +93,12 @@ jobs:
           ref: ${{ needs.create_check_run.outputs.head_sha }}
       - name: Fetch base branch
         run: |
-          git fetch origin ${{ needs.create_check_run.outputs.base_ref }} --depth=1
+          git fetch origin ${{ needs.create_check_run.outputs.base_ref }}:${{ needs.create_check_run.outputs.base_ref }} --depth=1
       - name: Paths filter
         id: filter
         uses: dorny/paths-filter@v2
         with:
-          base: "origin/${{ needs.create_check_run.outputs.base_ref }}"
+          base: ${{ needs.create_check_run.outputs.base_ref }}
           filters: |
             subtract_files:
               - 'src/subtract.ts'
@@ -120,12 +121,12 @@ jobs:
           ref: ${{ needs.create_check_run.outputs.head_sha }}
       - name: Fetch base branch
         run: |
-          git fetch origin ${{ needs.create_check_run.outputs.base_ref }} --depth=1
+          git fetch origin ${{ needs.create_check_run.outputs.base_ref }}:${{ needs.create_check_run.outputs.base_ref }} --depth=1
       - name: Paths filter
         id: filter
         uses: dorny/paths-filter@v2
         with:
-          base: "origin/${{ needs.create_check_run.outputs.base_ref }}"
+          base: ${{ needs.create_check_run.outputs.base_ref }}
           filters: |
             multiply_files:
               - 'src/multiply.ts'
@@ -139,12 +140,16 @@ jobs:
   complete_check_run:
     name: Complete Check Run
     needs:
+      - create_check_run
       - test-add
       - test-subtract
       - test-multiply
     runs-on: ubuntu-latest
     if: always()
     steps:
+      - name: Debug Check Run ID
+        run: |
+          echo "Check Run ID: ${{ needs.create_check_run.outputs.check_run_id }}"
       - name: Determine Conclusion
         id: conclusion
         run: |
@@ -162,13 +167,13 @@ jobs:
       - name: Complete Check Run
         uses: actions/github-script@v6
         with:
+          token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             await github.rest.checks.update({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              check_run_id: ${needs.create_check_run.outputs.check_run_id},
+              check_run_id: ${{ needs.create_check_run.outputs.check_run_id }},
               status: 'completed',
               conclusion: '${{ steps.conclusion.outputs.conclusion }}',
               completed_at: new Date().toISOString(),
             });
-          github-token: ${{ secrets.CHECKS_API_TOKEN }}
