@@ -1,0 +1,174 @@
+name: "Run PR Tests (Manually Triggered)"
+
+on:
+  workflow_dispatch:
+    inputs:
+      pull_request_number:
+        description: 'Number of the pull request to test'
+        required: true
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.inputs.pull_request_number }}
+  cancel-in-progress: true
+
+env:
+  PR_NUMBER: ${{ github.event.inputs.pull_request_number }}
+
+jobs:
+  create_check_run:
+    name: Create Check Run
+    runs-on: ubuntu-latest
+    outputs:
+      check_run_id: ${{ steps.create.outputs.check_run_id }}
+      head_sha: ${{ steps.get_pr_data.outputs.head_sha }}
+      base_ref: ${{ steps.get_pr_data.outputs.base_ref }}
+    steps:
+      - name: Get PR Data
+        id: get_pr_data
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const pr_number = parseInt('${{ env.PR_NUMBER }}');
+            const { data: pr } = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: pr_number,
+            });
+            core.setOutput('head_sha', pr.head.sha);
+            core.setOutput('base_ref', pr.base.ref);
+      - name: Create Check Run
+        id: create
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const { data } = await github.rest.checks.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              name: 'PR Tests',
+              head_sha: '${{ steps.get_pr_data.outputs.head_sha }}',
+              status: 'in_progress',
+              started_at: new Date().toISOString(),
+            });
+            core.setOutput('check_run_id', data.id);
+          github-token: ${{ secrets.CHECKS_API_TOKEN }}
+
+  test-add:
+    name: Test Add Function
+    needs: create_check_run
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout PR code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          ref: ${{ needs.create_check_run.outputs.head_sha }}
+      - name: Fetch base branch
+        run: |
+          git fetch origin ${{ needs.create_check_run.outputs.base_ref }} --depth=1
+      - name: Paths filter
+        id: filter
+        uses: dorny/paths-filter@v2
+        with:
+          base: "origin/${{ needs.create_check_run.outputs.base_ref }}"
+          filters: |
+            add_files:
+              - 'src/add.ts'
+              - 'tests/add.test.ts'
+      - name: Run Add Tests
+        if: steps.filter.outputs.add_files == 'true'
+        run: |
+          npm install
+          npm test tests/add.test.ts
+
+  test-subtract:
+    name: Test Subtract Function
+    needs: create_check_run
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout PR code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          ref: ${{ needs.create_check_run.outputs.head_sha }}
+      - name: Fetch base branch
+        run: |
+          git fetch origin ${{ needs.create_check_run.outputs.base_ref }} --depth=1
+      - name: Paths filter
+        id: filter
+        uses: dorny/paths-filter@v2
+        with:
+          base: "origin/${{ needs.create_check_run.outputs.base_ref }}"
+          filters: |
+            subtract_files:
+              - 'src/subtract.ts'
+              - 'tests/subtract.test.ts'
+      - name: Run Subtract Tests
+        if: steps.filter.outputs.subtract_files == 'true'
+        run: |
+          npm install
+          npm test tests/subtract.test.ts
+
+  test-multiply:
+    name: Test Multiply Function
+    needs: create_check_run
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout PR code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          ref: ${{ needs.create_check_run.outputs.head_sha }}
+      - name: Fetch base branch
+        run: |
+          git fetch origin ${{ needs.create_check_run.outputs.base_ref }} --depth=1
+      - name: Paths filter
+        id: filter
+        uses: dorny/paths-filter@v2
+        with:
+          base: "origin/${{ needs.create_check_run.outputs.base_ref }}"
+          filters: |
+            multiply_files:
+              - 'src/multiply.ts'
+              - 'tests/multiply.test.ts'
+      - name: Run Multiply Tests
+        if: steps.filter.outputs.multiply_files == 'true'
+        run: |
+          npm install
+          npm test tests/multiply.test.ts
+
+  complete_check_run:
+    name: Complete Check Run
+    needs:
+      - test-add
+      - test-subtract
+      - test-multiply
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Determine Conclusion
+        id: conclusion
+        run: |
+          conclusion="success"
+          if [ "${{ needs.test-add.result }}" == "failure" ]; then
+            conclusion="failure"
+          fi
+          if [ "${{ needs.test-subtract.result }}" == "failure" ]; then
+            conclusion="failure"
+          fi
+          if [ "${{ needs.test-multiply.result }}" == "failure" ]; then
+            conclusion="failure"
+          fi
+          echo "conclusion=$conclusion" >> $GITHUB_OUTPUT
+      - name: Complete Check Run
+        uses: actions/github-script@v6
+        with:
+          script: |
+            await github.rest.checks.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              check_run_id: ${needs.create_check_run.outputs.check_run_id},
+              status: 'completed',
+              conclusion: '${{ steps.conclusion.outputs.conclusion }}',
+              completed_at: new Date().toISOString(),
+            });
+          github-token: ${{ secrets.CHECKS_API_TOKEN }}
