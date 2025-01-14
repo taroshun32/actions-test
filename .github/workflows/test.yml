@@ -36,17 +36,11 @@ jobs:
             });
             core.setOutput('head_sha', pr.head.sha);
             core.setOutput('base_ref', pr.base.ref);
-      - name: Generate GitHub App Token
-        id: generate_app_token
-        uses: actions/create-github-app-token@v1
-        with:
-          app_id: ${{ secrets.APP_ID }}
-          private_key: ${{ secrets.PRIVATE_KEY }}
       - name: Create Check Run
         id: create
         uses: actions/github-script@v6
         with:
-          token: ${{ steps.generate_app_token.outputs.token }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const { data } = await github.rest.checks.create({
               owner: context.repo.owner,
@@ -151,12 +145,6 @@ jobs:
     runs-on: ubuntu-latest
     if: always()
     steps:
-      - name: Generate GitHub App Token
-        id: generate_app_token
-        uses: actions/create-github-app-token@v1
-        with:
-          app_id: ${{ secrets.GITHUB_APP_ID }}
-          private_key: ${{ secrets.GITHUB_APP_PRIVATE_KEY }}
       - name: Determine Conclusion
         id: conclusion
         run: |
@@ -174,7 +162,7 @@ jobs:
       - name: Complete Check Run
         uses: actions/github-script@v6
         with:
-          token: ${{ steps.generate_app_token.outputs.token }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             await github.rest.checks.update({
               owner: context.repo.owner,
