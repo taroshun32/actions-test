@@ -139,6 +139,7 @@ jobs:
   complete_check_run:
     name: Complete Check Run
     needs:
+      - create_check_run
       - test-add
       - test-subtract
       - test-multiply
