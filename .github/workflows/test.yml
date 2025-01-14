@@ -167,7 +167,7 @@ jobs:
             await github.rest.checks.update({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              check_run_id: ${needs.create_check_run.outputs.check_run_id},
+              check_run_id: ${{ needs.create_check_run.outputs.check_run_id }},
               status: 'completed',
               conclusion: '${{ steps.conclusion.outputs.conclusion }}',
               completed_at: new Date().toISOString(),
