@@ -64,12 +64,12 @@ jobs:
           ref: ${{ needs.create_check_run.outputs.head_sha }}
       - name: Fetch base branch
         run: |
-          git fetch origin ${{ needs.create_check_run.outputs.base_ref }} --depth=0
+          git fetch origin ${{ needs.create_check_run.outputs.base_ref }}:${{ needs.create_check_run.outputs.base_ref }} --depth=0
       - name: Paths filter
         id: filter
         uses: dorny/paths-filter@v2
         with:
-          base: "origin/${{ needs.create_check_run.outputs.base_ref }}"
+          base: ${{ needs.create_check_run.outputs.base_ref }}
           filters: |
             add_files:
               - 'src/add.ts'
@@ -92,12 +92,12 @@ jobs:
           ref: ${{ needs.create_check_run.outputs.head_sha }}
       - name: Fetch base branch
         run: |
-          git fetch origin ${{ needs.create_check_run.outputs.base_ref }} --depth=0
+          git fetch origin ${{ needs.create_check_run.outputs.base_ref }}:${{ needs.create_check_run.outputs.base_ref }} --depth=0
       - name: Paths filter
         id: filter
         uses: dorny/paths-filter@v2
         with:
-          base: "origin/${{ needs.create_check_run.outputs.base_ref }}"
+          base: ${{ needs.create_check_run.outputs.base_ref }}
           filters: |
             subtract_files:
               - 'src/subtract.ts'
@@ -120,12 +120,12 @@ jobs:
           ref: ${{ needs.create_check_run.outputs.head_sha }}
       - name: Fetch base branch
         run: |
-          git fetch origin ${{ needs.create_check_run.outputs.base_ref }} --depth=0
+          git fetch origin ${{ needs.create_check_run.outputs.base_ref }}:${{ needs.create_check_run.outputs.base_ref }} --depth=0
       - name: Paths filter
         id: filter
         uses: dorny/paths-filter@v2
         with:
-          base: "origin/${{ needs.create_check_run.outputs.base_ref }}"
+          base: ${{ needs.create_check_run.outputs.base_ref }}
           filters: |
             multiply_files:
               - 'src/multiply.ts'
