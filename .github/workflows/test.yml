@@ -50,6 +50,7 @@ jobs:
               status: 'in_progress',
               started_at: new Date().toISOString(),
             });
+            console.log('Created check run ID:', data.id);
             core.setOutput('check_run_id', data.id);
 
   test-add:
@@ -64,7 +65,7 @@ jobs:
           ref: ${{ needs.create_check_run.outputs.head_sha }}
       - name: Fetch base branch
         run: |
-          git fetch origin ${{ needs.create_check_run.outputs.base_ref }}:${{ needs.create_check_run.outputs.base_ref }}
+          git fetch origin ${{ needs.create_check_run.outputs.base_ref }}:${{ needs.create_check_run.outputs.base_ref }} --depth=1
       - name: Paths filter
         id: filter
         uses: dorny/paths-filter@v2
@@ -92,7 +93,7 @@ jobs:
           ref: ${{ needs.create_check_run.outputs.head_sha }}
       - name: Fetch base branch
         run: |
-          git fetch origin ${{ needs.create_check_run.outputs.base_ref }}:${{ needs.create_check_run.outputs.base_ref }}
+          git fetch origin ${{ needs.create_check_run.outputs.base_ref }}:${{ needs.create_check_run.outputs.base_ref }} --depth=1
       - name: Paths filter
         id: filter
         uses: dorny/paths-filter@v2
@@ -120,7 +121,7 @@ jobs:
           ref: ${{ needs.create_check_run.outputs.head_sha }}
       - name: Fetch base branch
         run: |
-          git fetch origin ${{ needs.create_check_run.outputs.base_ref }}:${{ needs.create_check_run.outputs.base_ref }}
+          git fetch origin ${{ needs.create_check_run.outputs.base_ref }}:${{ needs.create_check_run.outputs.base_ref }} --depth=1
       - name: Paths filter
         id: filter
         uses: dorny/paths-filter@v2
@@ -146,6 +147,9 @@ jobs:
     runs-on: ubuntu-latest
     if: always()
     steps:
+      - name: Debug Check Run ID
+        run: |
+          echo "Check Run ID: ${{ needs.create_check_run.outputs.check_run_id }}"
       - name: Determine Conclusion
         id: conclusion
         run: |
