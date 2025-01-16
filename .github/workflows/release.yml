@@ -33,7 +33,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ steps.get_github_app_token.outputs.token }}
         run: |
-          git push origin HEAD:main --follow-tags
+          git push -f origin HEAD:main --follow-tags
 
   merge_to_develop:
     name: Merge to Develop
@@ -64,4 +64,4 @@ jobs:
         run: |
           git pull --rebase origin develop
           git merge --no-ff -m "Merge branch 'main' into develop" main
-          git push origin develop
+          git push -f origin develop
