@@ -46,7 +46,9 @@ jobs:
         with:
           ref: develop
       - name: Checkout main branch
-        run: git checkout main
+        run: |
+          git pull origin main
+          git checkout main
       - name: Set Git Config
         run: |
           git config --global user.name  "GitHub Action"
