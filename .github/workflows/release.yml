@@ -9,6 +9,11 @@ jobs:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
     steps:
+      - name: Set Git Config
+        run: |
+          git config --global user.name  "GitHub Action"
+          git config --global user.email "action@github.com"
+        shell: bash
       - uses: actions/create-github-app-token@v1
         id: get_github_app_token
         with:
@@ -25,20 +30,10 @@ jobs:
           node-version: '22'
       - name: Install dependencies
         run: npm install
-      - name: Set Git Config
-        run: |
-          git config --global user.name  "GitHub Action"
-          git config --global user.email "action@github.com"
-        shell: bash
       - name: Increment version
         run: npm version patch
-        env:
-          GITHUB_TOKEN: ${{ steps.get_github_app_token.outputs.token }}
       - name: Push changes
-        env:
-          GITHUB_TOKEN: ${{ steps.get_github_app_token.outputs.token }}
-        run: |
-          git push -f origin HEAD:main --follow-tags
+        run: git push -f origin HEAD:main --follow-tags
 
   merge_to_develop:
     name: Merge to Develop
@@ -46,6 +41,11 @@ jobs:
     if: github.ref == 'refs/heads/main'
     needs: version_increment
     steps:
+      - name: Set Git Config
+        run: |
+          git config --global user.name  "GitHub Action"
+          git config --global user.email "action@github.com"
+        shell: bash
       - uses: actions/create-github-app-token@v1
         id: get_github_app_token
         with:
@@ -56,18 +56,11 @@ jobs:
         with:
           ref: develop
           token: ${{ steps.get_github_app_token.outputs.token }}
-      - name: Set Git Config
-        run: |
-          git config --global user.name  "GitHub Action"
-          git config --global user.email "action@github.com"
-        shell: bash
       - name: Checkout main branch
         run: |
           git pull origin main
           git checkout main
       - name: Merge main into develop
-        env:
-          GITHUB_TOKEN: ${{ steps.get_github_app_token.outputs.token }}
         run: |
           git pull --rebase origin develop
           git merge --no-ff -m "Merge branch 'main' into develop" main
