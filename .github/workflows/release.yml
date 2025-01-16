@@ -24,14 +24,14 @@ jobs:
         run: npm install
       - name: Increment version
         run: npm version patch
-#      - uses: actions/create-github-app-token@v1
-#        id: get_github_app_token
-#        with:
-#          app-id: ${{ vars.APP_ID }}
-#          private-key: ${{ secrets.PRIVATE_KEY }}
+      - uses: actions/create-github-app-token@v1
+        id: get_github_app_token
+        with:
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.PRIVATE_KEY }}
       - name: Push changes
-#        env:
-#          GITHUB_TOKEN: ${{ steps.get_github_app_token.outputs.token }}
+        env:
+          GITHUB_TOKEN: ${{ steps.get_github_app_token.outputs.token }}
         run: |
           git push origin HEAD:main --follow-tags
 
@@ -53,14 +53,14 @@ jobs:
         run: |
           git config --global user.name  "GitHub Action"
           git config --global user.email "action@github.com"
-#      - uses: actions/create-github-app-token@v1
-#        id: get_github_app_token
-#        with:
-#          app-id: ${{ vars.APP_ID }}
-#          private-key: ${{ secrets.PRIVATE_KEY }}
+      - uses: actions/create-github-app-token@v1
+        id: get_github_app_token
+        with:
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.PRIVATE_KEY }}
       - name: Merge main into develop
-#        env:
-#          GITHUB_TOKEN: ${{ steps.get_github_app_token.outputs.token }}
+        env:
+          GITHUB_TOKEN: ${{ steps.get_github_app_token.outputs.token }}
         run: |
           git pull --rebase origin develop
           git merge --no-ff -m "Merge branch 'main' into develop" main
