@@ -27,13 +27,13 @@ jobs:
       - uses: actions/create-github-app-token@v1
         id: get_github_app_token
         with:
-          app-id: ${{ vars.APP_ID }}
+          app-id: ${{ secrets.APP_ID }}
           private-key: ${{ secrets.PRIVATE_KEY }}
       - name: Push changes
         env:
           GITHUB_TOKEN: ${{ steps.get_github_app_token.outputs.token }}
         run: |
-          git push -f origin HEAD:main --follow-tags
+          git push origin HEAD:main --follow-tags
 
   merge_to_develop:
     name: Merge to Develop
@@ -64,4 +64,4 @@ jobs:
         run: |
           git pull --rebase origin develop
           git merge --no-ff -m "Merge branch 'main' into develop" main
-          git push -f origin develop
+          git push origin develop
