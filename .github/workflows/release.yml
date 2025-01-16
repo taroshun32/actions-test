@@ -1,0 +1,58 @@
+name: "Release Workflow"
+
+on:
+  workflow_dispatch:
+
+jobs:
+  version_increment:
+    name: Version Increment
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '22'
+      - name: Install dependencies
+        run: npm install
+      - name: Increment version
+        run: npm version patch
+#      - uses: actions/create-github-app-token@v1
+#        id: get_github_app_token
+#        with:
+#          app-id: ${{ vars.APP_ID }}
+#          private-key: ${{ secrets.PRIVATE_KEY }}
+      - name: Push changes
+#        env:
+#          GITHUB_TOKEN: ${{ steps.get_github_app_token.outputs.token }}
+        run: |
+          git config --global user.name "GitHub Action"
+          git config --global user.email "action@github.com"
+          git push origin HEAD:main --follow-tags
+
+  merge_to_develop:
+    name: Merge to Develop
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    needs: version_increment
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          ref: develop
+#      - uses: actions/create-github-app-token@v1
+#        id: get_github_app_token
+#        with:
+#          app-id: ${{ vars.APP_ID }}
+#          private-key: ${{ secrets.PRIVATE_KEY }}
+      - name: Merge main into develop
+#        env:
+#          GITHUB_TOKEN: ${{ steps.get_github_app_token.outputs.token }}
+        run: |
+          git config --global user.name "GitHub Action"
+          git config --global user.email "action@github.com"
+          git pull --rebase origin develop
+          git merge --no-ff -m "Merge branch 'main' into develop" main
+          git push origin develop
