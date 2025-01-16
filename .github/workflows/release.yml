@@ -9,12 +9,6 @@ jobs:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '22'
       - uses: actions/create-github-app-token@v1
         id: get_github_app_token
         with:
@@ -28,6 +22,15 @@ jobs:
       - run: |
           git config --global user.name '${{ steps.get_github_app_token.outputs.app-slug }}[bot]'
           git config --global user.email '${{ steps.get-user-id.outputs.user-id }}+${{ steps.get_github_app_token.outputs.app-slug }}[bot]@users.noreply.github.com'
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '22'
       - name: Install dependencies
         run: npm install
       - name: Increment version
@@ -44,14 +47,6 @@ jobs:
     if: github.ref == 'refs/heads/main'
     needs: version_increment
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-        with:
-          ref: develop
-      - name: Checkout main branch
-        run: |
-          git pull origin main
-          git checkout main
       - uses: actions/create-github-app-token@v1
         id: get_github_app_token
         with:
@@ -65,6 +60,15 @@ jobs:
       - run: |
           git config --global user.name '${{ steps.get_github_app_token.outputs.app-slug }}[bot]'
           git config --global user.email '${{ steps.get-user-id.outputs.user-id }}+${{ steps.get_github_app_token.outputs.app-slug }}[bot]@users.noreply.github.com'
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          ref: develop
+          persist-credentials: false
+      - name: Checkout main branch
+        run: |
+          git pull origin main
+          git checkout main
       - name: Merge main into develop
         env:
           GITHUB_TOKEN: ${{ steps.get_github_app_token.outputs.token }}
