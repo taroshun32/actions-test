@@ -15,6 +15,11 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '22'
+      - name: Set Git Config
+        run: |
+          git config --global user.name  "GitHub Action"
+          git config --global user.email "action@github.com"
+        shell: bash
       - name: Install dependencies
         run: npm install
       - name: Increment version
@@ -28,8 +33,6 @@ jobs:
 #        env:
 #          GITHUB_TOKEN: ${{ steps.get_github_app_token.outputs.token }}
         run: |
-          git config --global user.name "GitHub Action"
-          git config --global user.email "action@github.com"
           git push origin HEAD:main --follow-tags
 
   merge_to_develop:
@@ -42,6 +45,10 @@ jobs:
         uses: actions/checkout@v3
         with:
           ref: develop
+      - name: Set Git Config
+        run: |
+          git config --global user.name  "GitHub Action"
+          git config --global user.email "action@github.com"
 #      - uses: actions/create-github-app-token@v1
 #        id: get_github_app_token
 #        with:
@@ -51,8 +58,6 @@ jobs:
 #        env:
 #          GITHUB_TOKEN: ${{ steps.get_github_app_token.outputs.token }}
         run: |
-          git config --global user.name "GitHub Action"
-          git config --global user.email "action@github.com"
           git pull --rebase origin develop
           git merge --no-ff -m "Merge branch 'main' into develop" main
           git push origin develop
