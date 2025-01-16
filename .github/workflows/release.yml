@@ -25,6 +25,11 @@ jobs:
           node-version: '22'
       - name: Install dependencies
         run: npm install
+      - name: Set Git Config
+        run: |
+          git config --global user.name  "GitHub Action"
+          git config --global user.email "action@github.com"
+        shell: bash
       - name: Increment version
         run: npm version patch
         env:
@@ -51,6 +56,11 @@ jobs:
         with:
           ref: develop
           persist-credentials: false
+      - name: Set Git Config
+        run: |
+          git config --global user.name  "GitHub Action"
+          git config --global user.email "action@github.com"
+        shell: bash
       - name: Checkout main branch
         run: |
           git pull origin main
