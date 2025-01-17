@@ -33,7 +33,7 @@ jobs:
       - name: Increment version
         run: npm version patch
       - name: Push changes
-        run: git push -f origin HEAD:main --follow-tags
+        run: git push origin HEAD:main --follow-tags
 
   merge_to_develop:
     name: Merge to Develop
@@ -64,4 +64,4 @@ jobs:
         run: |
           git pull --rebase origin develop
           git merge --no-ff -m "Merge branch 'main' into develop" main
-          git push -f origin develop
+          git push origin develop
