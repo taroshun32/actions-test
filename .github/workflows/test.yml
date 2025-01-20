@@ -21,6 +21,7 @@ jobs:
     outputs:
       check_run_id: ${{ steps.create.outputs.check_run_id }}
       head_sha: ${{ steps.get_pr_data.outputs.head_sha }}
+      base_ref: ${{ steps.get_pr_data.outputs.base_ref }}
       base_sha: ${{ steps.get_pr_data.outputs.base_sha }}
     steps:
       - name: Get PR Data
@@ -35,6 +36,7 @@ jobs:
               pull_number: pr_number,
             });
             core.setOutput('head_sha', pr.head.sha);
+            core.setOutput('base_ref', pr.base.ref);
             const { data: refData } = await github.rest.git.getRef({
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -71,7 +73,7 @@ jobs:
           ref: ${{ needs.create_check_run.outputs.head_sha }}
       - name: Fetch base branch
         run: |
-          git fetch origin ${{ needs.create_check_run.outputs.base_sha }}:${{ needs.create_check_run.outputs.base_sha }} --depth=1
+          git fetch origin ${{ needs.create_check_run.outputs.base_ref }}:${{ needs.create_check_run.outputs.base_ref }}
       - name: Paths filter
         id: filter
         uses: dorny/paths-filter@v2
@@ -99,7 +101,7 @@ jobs:
           ref: ${{ needs.create_check_run.outputs.head_sha }}
       - name: Fetch base branch
         run: |
-          git fetch origin ${{ needs.create_check_run.outputs.base_sha }}:${{ needs.create_check_run.outputs.base_sha }} --depth=1
+          git fetch origin ${{ needs.create_check_run.outputs.base_ref }}:${{ needs.create_check_run.outputs.base_ref }}
       - name: Paths filter
         id: filter
         uses: dorny/paths-filter@v2
@@ -127,7 +129,7 @@ jobs:
           ref: ${{ needs.create_check_run.outputs.head_sha }}
       - name: Fetch base branch
         run: |
-          git fetch origin ${{ needs.create_check_run.outputs.base_sha }}:${{ needs.create_check_run.outputs.base_sha }} --depth=1
+          git fetch origin ${{ needs.create_check_run.outputs.base_ref }}:${{ needs.create_check_run.outputs.base_ref }}
       - name: Paths filter
         id: filter
         uses: dorny/paths-filter@v2
