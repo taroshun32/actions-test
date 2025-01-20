@@ -35,11 +35,10 @@ jobs:
               pull_number: pr_number,
             });
             core.setOutput('head_sha', pr.head.sha);
-            const baseRef = '${{ pr.base.ref }}'
             const { data: refData } = await github.rest.git.getRef({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              ref: 'heads/' + baseRef,
+              ref: 'heads/' + pr.base.ref,
             });
             core.setOutput('base_sha', refData.object.sha);
             console.log('Base commit SHA:', refData.object.sha);
