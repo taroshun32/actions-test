@@ -36,6 +36,7 @@ jobs:
             });
             core.setOutput('head_sha', pr.head.sha);
             core.setOutput('base_sha', pr.base.sha);
+            console.log('Base commit SHA:', pr.base.sha);
       - name: Create Check Run
         id: create
         uses: actions/github-script@v6
