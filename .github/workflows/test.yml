@@ -35,8 +35,14 @@ jobs:
               pull_number: pr_number,
             });
             core.setOutput('head_sha', pr.head.sha);
-            core.setOutput('base_sha', pr.base.sha);
-            console.log('Base commit SHA:', pr.base.sha);
+            const baseRef = '${{ steps.get_pr_data.outputs.base_ref }}';
+            const { data: refData } = await github.rest.git.getRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: 'heads/' + baseRef,
+            });
+            core.setOutput('base_sha', refData.object.sha);
+            console.log('Base commit SHA:', refData.object.sha);
       - name: Create Check Run
         id: create
         uses: actions/github-script@v6
