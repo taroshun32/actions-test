@@ -21,7 +21,7 @@ jobs:
     outputs:
       check_run_id: ${{ steps.create.outputs.check_run_id }}
       head_sha: ${{ steps.get_pr_data.outputs.head_sha }}
-      base_sha: ${{ steps.get_pr_data.outputs.base_sha }}
+      base_ref: ${{ steps.get_pr_data.outputs.base_ref }}
     steps:
       - name: Get PR Data
         id: get_pr_data
@@ -35,13 +35,7 @@ jobs:
               pull_number: pr_number,
             });
             core.setOutput('head_sha', pr.head.sha);
-            const { data: baseCommit } = await github.rest.repos.getCommit({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              ref: pr.base.ref,
-            });
-            console.log('Base commit SHA:', baseCommit.sha);
-            core.setOutput('base_sha', baseCommit.sha);
+            core.setOutput('base_ref', pr.base.ref);
       - name: Create Check Run
         id: create
         uses: actions/github-script@v6
@@ -71,12 +65,12 @@ jobs:
           ref: ${{ needs.create_check_run.outputs.head_sha }}
       - name: Fetch base branch
         run: |
-          git fetch origin ${{ needs.create_check_run.outputs.base_sha }}:${{ needs.create_check_run.outputs.base_sha }} --depth=1
+          git fetch origin ${{ needs.create_check_run.outputs.base_ref }}:${{ needs.create_check_run.outputs.base_ref }} --depth=1
       - name: Paths filter
         id: filter
         uses: dorny/paths-filter@v2
         with:
-          base: ${{ needs.create_check_run.outputs.base_sha }}
+          base: ${{ needs.create_check_run.outputs.base_ref }}
           filters: |
             add_files:
               - 'src/add.ts'
@@ -99,12 +93,12 @@ jobs:
           ref: ${{ needs.create_check_run.outputs.head_sha }}
       - name: Fetch base branch
         run: |
-          git fetch origin ${{ needs.create_check_run.outputs.base_sha }}:${{ needs.create_check_run.outputs.base_sha }} --depth=1
+          git fetch origin ${{ needs.create_check_run.outputs.base_ref }}:${{ needs.create_check_run.outputs.base_ref }} --depth=1
       - name: Paths filter
         id: filter
         uses: dorny/paths-filter@v2
         with:
-          base: ${{ needs.create_check_run.outputs.base_sha }}
+          base: ${{ needs.create_check_run.outputs.base_ref }}
           filters: |
             subtract_files:
               - 'src/subtract.ts'
@@ -127,12 +121,12 @@ jobs:
           ref: ${{ needs.create_check_run.outputs.head_sha }}
       - name: Fetch base branch
         run: |
-          git fetch origin ${{ needs.create_check_run.outputs.base_sha }}:${{ needs.create_check_run.outputs.base_sha }} --depth=1
+          git fetch origin ${{ needs.create_check_run.outputs.base_ref }}:${{ needs.create_check_run.outputs.base_ref }} --depth=1
       - name: Paths filter
         id: filter
         uses: dorny/paths-filter@v2
         with:
-          base: ${{ needs.create_check_run.outputs.base_sha }}
+          base: ${{ needs.create_check_run.outputs.base_ref }}
           filters: |
             multiply_files:
               - 'src/multiply.ts'
