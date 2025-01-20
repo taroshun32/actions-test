@@ -63,9 +63,6 @@ jobs:
         with:
           fetch-depth: 0
           ref: ${{ needs.create_check_run.outputs.head_sha }}
-#      - name: Fetch base branch
-#        run: |
-#          git fetch origin ${{ needs.create_check_run.outputs.base_ref }}:${{ needs.create_check_run.outputs.base_ref }}
       - name: Paths filter
         id: filter
         uses: dorny/paths-filter@v2
@@ -91,9 +88,6 @@ jobs:
         with:
           fetch-depth: 0
           ref: ${{ needs.create_check_run.outputs.head_sha }}
-#      - name: Fetch base branch
-#        run: |
-#          git fetch origin ${{ needs.create_check_run.outputs.base_ref }}:${{ needs.create_check_run.outputs.base_ref }}
       - name: Paths filter
         id: filter
         uses: dorny/paths-filter@v2
@@ -119,9 +113,6 @@ jobs:
         with:
           fetch-depth: 0
           ref: ${{ needs.create_check_run.outputs.head_sha }}
-#      - name: Fetch base branch
-#        run: |
-#          git fetch origin ${{ needs.create_check_run.outputs.base_ref }}:${{ needs.create_check_run.outputs.base_ref }}
       - name: Paths filter
         id: filter
         uses: dorny/paths-filter@v2
